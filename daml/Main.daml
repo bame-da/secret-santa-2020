@@ -1,0 +1,253 @@
+module Main where
+
+import DA.List (sort)
+import DA.Optional (isNone)
+import DA.Time (time)
+import DA.Date (date, Month(..))
+import DA.Action (when, void)
+import DA.Foldable (forA_)
+
+-- | An `Elf` represents a participant in the secret santa.
+template Elf
+  with
+    -- | The operator of the secret santa
+    santa : Party
+    -- | A regulator ensuring santa doesn't cheat
+    holidayRegulator : Party
+    -- | The party of the participant
+    party : Party
+    -- | A human readable name for the elf
+    name : Text
+    -- | A public party that is able to read this contract
+    public : Party
+  where
+    signatory [santa, holidayRegulator, party]
+    observer public
+
+    key (santa, holidayRegulator, party) : (Party, Party, Party)
+    maintainer key._1, key._2
+
+    controller party can
+      Elf_ChangeName : ContractId Elf
+        with
+          newName : Text
+        do
+          create this with name = newName
+
+    controller [santa, holidayRegulator] can
+      nonconsuming Elf_Match : ContractId ElfMatch
+        with
+          recipientElf : Party
+        do
+          create ElfMatch with giverElf = party; ..
+
+      TidyUp_Elf : ()
+        do
+          oMatch <- lookupByKey @ElfMatch (key this)
+          oPledge <- lookupByKey @Pledge (key this)
+          (_, ss) <- fetchByKey @SecretSanta [santa, holidayRegulator]
+          forA_ ss.elves (\metElf -> do
+            oMeeting <- lookupByKey @ElfMeeting ElfMeeting with
+              elf = party
+              ..
+            forA_ oMeeting archive)
+          assertMsg "Can't tidy up while there are open matches or pledges" (isNone oMatch && isNone oPledge)
+
+-- | Represents that one elf is on the hook to give a gift to another elf
+template ElfMatch
+  with
+    -- | The operator of the secret santa
+    santa : Party
+    -- | A regulator ensuring santa doesn't cheat
+    holidayRegulator : Party
+    -- | The elf that has to give a gift
+    giverElf : Party
+    -- | The elf that will receive the gift
+    recipientElf : Party
+  where
+    signatory [santa, holidayRegulator, giverElf] 
+    key (santa, holidayRegulator, giverElf) : (Party, Party, Party)
+    maintainer key._1, key._2
+    ensure giverElf /= recipientElf
+
+    controller santa can
+      Penalize : ContractId Pledge
+        do
+          pledge <- lookupByKey @Pledge (key this)
+          now <- getTime
+          assertMsg "Can't panalise if pledge has been made" (isNone pledge)
+          assertMsg "Can't penalise before December 25th)" (now > time (date 2020 Dec 25) 0 0 0)
+          create Pledge with gift = "A bag of homebaked cookies"; revealed = False; .. 
+
+    controller giverElf can        
+      Make_Pledge
+        : ContractId Pledge
+        with
+          gift : Text
+        do
+          create Pledge with revealed = False; ..
+
+-- | Represents a claim that one elf met another
+template ElfMeeting
+  with
+    -- | The operator of the secret santa
+    santa : Party
+    -- | A regulator ensuring santa doesn't cheat
+    holidayRegulator : Party
+    -- | The eld that made the claim
+    elf : Party
+    -- | The elf that `elf` claims to have met
+    metElf : Party
+  where
+    signatory santa, holidayRegulator, elf
+    observer metElf
+    key this : ElfMeeting
+    maintainer key.santa, key.holidayRegulator
+    ensure elf /= metElf
+
+-- | A pledge to give a gift at the next meeting
+template Pledge
+  with
+    -- | The operator of the secret santa
+    santa : Party
+    -- | A regulator ensuring santa doesn't cheat
+    holidayRegulator : Party
+    -- | The elf that has to give a gift
+    giverElf : Party
+    -- | The elf that will receive the gift
+    recipientElf : Party
+    -- | A description of the gift
+    gift : Text
+    -- | A boolean indicating whether the pledge is revealed to the receiver.
+    -- Should be set True once the meeing has happened.
+    revealed : Bool
+  where
+    signatory santa, holidayRegulator, giverElf
+    observer if revealed then [recipientElf] else []
+    key (santa, holidayRegulator, giverElf) : (Party, Party, Party)
+    maintainer key._1, key._2
+    ensure giverElf /= recipientElf
+
+    choice Reveal : ContractId Pledge
+      with
+        revealer : Party
+      controller revealer
+      do
+        if revealer == santa
+          then do
+            now <- getTime
+            assertMsg "Santa can only reveal from December 2021" (now > time (date 2021 Dec 1) 0 0 0)
+          else
+            assertMsg "Only santa and giver can reveal the pledge" (revealer == giverElf)
+        create this with revealed = True
+
+    choice Resolve : ()
+      controller recipientElf
+      do
+        return ()
+
+-- | A request from Santa to a regulator to get regualted
+template SecretSantaRegulationRequest
+  with
+    -- | The operator of the secret santa
+    santa : Party
+    -- | A regulator ensuring santa doesn't cheat
+    holidayRegulator : Party
+  where
+    signatory santa
+
+    controller holidayRegulator can
+      Approve_Santa : ContractId SecretSantaSignup
+        with
+          public : Party
+        do create SecretSantaSignup with ..
+
+-- | Helper because we don't have multi-party submission
+template SecretSantaSignupHelper
+  with
+    santa : Party
+    holidayRegulator : Party
+    party : Party
+    name : Text
+  where
+    signatory party
+
+    controller santa can
+      ActionSignup : ContractId Elf
+        do
+          exerciseByKey @SecretSantaSignup [santa, holidayRegulator] RegisterElf with ..
+
+-- | A contract that managees the signup process for a secret santa.
+template SecretSantaSignup
+  with
+    -- | The operator of the secret santa
+    santa : Party
+    -- | A regulator ensuring santa doesn't cheat
+    holidayRegulator : Party
+    -- | A party representing the public so everyone can see signup is in progress.
+    public : Party
+  where
+    signatory [santa, holidayRegulator]
+    observer public
+
+    key [santa, holidayRegulator] : [Party]
+    maintainer key
+
+    nonconsuming choice RegisterElf
+      : ContractId Elf
+      with
+        party : Party
+        name : Text
+      controller party
+      do
+        create Elf with ..
+
+    choice CloseSignup
+      : ContractId SecretSanta
+      with
+        elves : [Party]
+      controller santa
+      do
+        create SecretSanta with ..
+
+template SecretSanta
+  with
+    -- | The operator of the secret santa
+    santa : Party
+    -- | A regulator ensuring santa doesn't cheat
+    holidayRegulator : Party
+    -- | The elves that are participating
+    elves : [Party]
+  where
+    signatory santa, holidayRegulator
+    observer elves
+
+    key [santa, holidayRegulator] : [Party]
+    maintainer key
+
+    controller santa can
+      nonconsuming Match_Elves : [ContractId ElfMatch]
+        with
+          permutation : [Party]
+        do
+          assertMsg "Permutation doesn't match elves" (sort elves == sort permutation)
+          let matches = zip elves permutation
+          forA matches (\(giverElf, recipientElf) -> do
+            exerciseByKey @Elf (santa, holidayRegulator, giverElf) Elf_Match with ..)
+
+      postconsuming TidyUp : ()
+        do
+          forA_ elves (\elf -> do
+            exerciseByKey @Elf (santa, holidayRegulator, elf) TidyUp_Elf)
+          
+    nonconsuming choice Claim_Meeting
+      : ContractId ElfMeeting
+      with
+        elf : Party
+        metElf : Party
+      controller elf
+      do
+        assertMsg "Elves must be part of secret santa" (elf `elem` elves && metElf `elem` elves)
+        (pcid, pledge) <- fetchByKey @Pledge (santa, holidayRegulator, elf)
+        when (pledge.recipientElf == metElf) (void $ exercise pcid Reveal with revealer = elf)
+        create ElfMeeting with ..

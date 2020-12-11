@@ -1,0 +1,152 @@
+module Test where
+
+import Daml.Script
+
+import DA.Date (datetime, Month(..))
+import DA.Foldable (forA_)
+
+import Main
+
+test_secret_santa = script do
+  -- Set up shop
+  santa <- allocateParty "Santa"
+  holidayRegulator <- allocateParty "Regulator"
+  let sskey = [santa ,holidayRegulator]
+  setTime (datetime 2020 Dec 11 0 0 0)
+  public <- allocateParty "Public"
+
+  req <- submit santa do
+    createCmd SecretSantaRegulationRequest with ..
+
+  submit holidayRegulator do
+    exerciseCmd req Approve_Santa with ..
+
+  -- Allocate some elves
+  elves@[alice, bob, carol] <- mapA allocateParty ["Alice", "Bob", "Carol"]
+
+  -- Sign Them Up!
+  forA_ elves (\elf -> do
+    helper <- submit elf do
+      createCmd SecretSantaSignupHelper with
+        party = elf
+        name = show elf
+        ..
+    submit santa do
+      exerciseCmd helper ActionSignup)
+
+  -- Only once.
+  forA_ elves (\elf -> do
+    helper <- submit elf do
+      createCmd SecretSantaSignupHelper with
+        party = elf
+        name = show elf
+        ..
+    submitMustFail santa do
+      exerciseCmd helper ActionSignup
+    submit elf do
+      archiveCmd helper)
+
+  -- No more signups!
+  submit santa do
+    exerciseByKeyCmd @SecretSantaSignup sskey CloseSignup with ..
+
+  -- Check only a valid permutation can be used for matching.
+  submitMustFail santa do
+    exerciseByKeyCmd @SecretSanta sskey Match_Elves with permutation = elves
+
+  submitMustFail santa do
+    exerciseByKeyCmd @SecretSanta sskey Match_Elves with permutation = [bob, alice, bob]
+
+  submitMustFail santa do
+    exerciseByKeyCmd @SecretSanta sskey Match_Elves with permutation = [bob, carol, santa]
+
+  submit santa do
+    exerciseByKeyCmd @SecretSanta sskey Match_Elves with permutation = [bob, carol, alice]
+
+  -- Pledge
+  submit alice do
+    exerciseByKeyCmd @ElfMatch (santa, holidayRegulator, alice) Make_Pledge with
+      gift = "An old spoon"
+
+  submit bob do
+    exerciseByKeyCmd @ElfMatch (santa, holidayRegulator, bob) Make_Pledge with
+      gift = "Some fancy beans"
+  
+  -- Can't pledge a second time
+  submitMustFail alice do
+    exerciseByKeyCmd @ElfMatch (santa, holidayRegulator, alice) Make_Pledge with
+      gift = "An old spoon"
+
+  -- Santa can't penalize yet
+  submitMustFail santa do
+    exerciseByKeyCmd @ElfMatch (santa, holidayRegulator, carol) Penalize
+
+  -- It's X-Mas!
+  setTime (datetime 2020 Dec 25 0 0 1)
+
+  -- Carol hasn't pledged to she get's to make cookies.
+  submit santa do
+    exerciseByKeyCmd @ElfMatch (santa, holidayRegulator, carol) Penalize
+
+  -- Everyoen sees just their own pledge
+  forA_ elves (\elf -> do
+    pledges <- query @Pledge elf
+    assert (length pledges == 1)
+    )
+  
+  -- Alice and Bob meet
+  submit bob do
+    exerciseByKeyCmd @SecretSanta sskey Claim_Meeting with
+      elf = bob
+      metElf = alice
+
+  -- Everyoen still sees just their own pledge
+  forA_ elves (\elf -> do
+    pledges <- query @Pledge elf
+    assert (length pledges == 1)
+    )
+
+  -- Alice also registers the meeting
+  submit alice do
+    exerciseByKeyCmd @SecretSanta sskey Claim_Meeting with
+      elf = alice
+      metElf = bob
+
+  -- Bob nor sees two pledges
+  do
+    pledges <- query @Pledge bob
+    assert (length pledges == 2)
+
+  -- The other meetings happen
+  submit bob do
+    exerciseByKeyCmd @SecretSanta sskey Claim_Meeting with
+      elf = bob
+      metElf = carol
+  submit alice do
+    exerciseByKeyCmd @SecretSanta sskey Claim_Meeting with
+      elf = alice
+      metElf = carol
+  submit carol do
+    exerciseByKeyCmd @SecretSanta sskey Claim_Meeting with
+      elf = carol
+      metElf = alice
+  submit carol do
+    exerciseByKeyCmd @SecretSanta sskey Claim_Meeting with
+      elf = carol
+      metElf = bob
+
+  -- Everyoen now sees two pledges - one given, one received
+  forA_ elves (\elf -> do
+    pledges <- query @Pledge elf
+    assert (length pledges == 2)
+    )
+
+  -- Everyoen resolves the pledges
+  forA_ elves (\elf -> do
+    [(cid, _)] <- queryFilter @Pledge elf (\p -> p.recipientElf == elf)
+    submit elf do
+      exerciseCmd cid Resolve)
+
+  -- Tidy up time
+  submit santa do
+    exerciseByKeyCmd @SecretSanta sskey TidyUp
