@@ -14,7 +14,3 @@ dependencies:
 sandbox-options:
   - --wall-clock-time
   - --ledgerid=santa-sandbox
-codegen:
-  js:
-    output-directory: ui/lib/daml
-    npm-scope: daml.js
