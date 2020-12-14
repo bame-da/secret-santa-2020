@@ -26,3 +26,8 @@ export const httpBaseUrl =
   deploymentMode === DeploymentMode.PROD_DABL
   ? `https://api.projectdabl.com/data/${ledgerId}/`
   : undefined;
+
+export const publicParty =
+  deploymentMode === DeploymentMode.PROD_DABL
+  ? `public-{$ledgerId}`
+  : 'Public'

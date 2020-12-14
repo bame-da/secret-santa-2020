@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useCallback } from 'react'
-import { Button, Form, Grid, Header, Image, Segment } from 'semantic-ui-react'
+import { Button, Divider, Icon, Form, Grid, Header, Image, Segment } from 'semantic-ui-react'
 import Credentials, { computeCredentials } from '../Credentials';
+import UserList from './UserList';
 import { DeploymentMode, deploymentMode, ledgerId} from '../config';
 import { useEffect } from 'react';
 
@@ -52,7 +53,7 @@ const LoginScreen: React.FC<Props> = ({onLogin}) => {
 
   return (
     <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
-      <Grid.Column style={{ maxWidth: 450 }}>
+      <Grid.Column textAlign='left' style={{ maxWidth: 450 }}>
         <Header as='h1' textAlign='center' size='huge' style={{color: '#223668'}}>
           <Header.Content>
             Secret
@@ -95,6 +96,17 @@ const LoginScreen: React.FC<Props> = ({onLogin}) => {
             }
           </Segment>
         </Form>
+        <Segment>
+              <Header as='h2'>
+                <Icon name='snowflake' />
+                <Header.Content>
+                  Elves
+                  <Header.Subheader>People already participating</Header.Subheader>
+                </Header.Content>
+              </Header>
+              <Divider />
+              <UserList/>
+            </Segment>
       </Grid.Column>
     </Grid>
   );

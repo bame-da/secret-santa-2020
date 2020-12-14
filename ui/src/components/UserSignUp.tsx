@@ -5,16 +5,16 @@ import React, { useCallback } from 'react'
 import { Label, Form, Button, Segment, Header, Icon, Divider } from 'semantic-ui-react'
 import { Main } from 'codegen-santa';
 import { useParty, useStreamQueries, useLedger } from '@daml/react';
+import { useStreamQueriesAsPublic } from './PublicLedger';
 
 type Props = {
 }
-
 
 const UserSignUp: React.FC<Props> = () => {
   const [username, setUsername] = React.useState('');
   const ledger = useLedger();
   const party = useParty();
-  const secretSanta = useStreamQueries(Main.SecretSantaSignup).contracts[0]?.payload;
+  const secretSanta = useStreamQueriesAsPublic(Main.SecretSantaSignup).contracts[0]?.payload;
   const myElf = useStreamQueries(Main.Elf, () => [{party}]).contracts[0]?.payload;
   const mySignupHelper = useStreamQueries(Main.SecretSantaSignupHelper, () => [{party}]).contracts[0]?.payload;
 

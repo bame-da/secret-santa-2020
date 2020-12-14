@@ -15,7 +15,7 @@ getOrAllocate ps name = do
 
 init = script do
   parties <- listKnownParties
-  [alice@public, santa, holidayRegulator] <- mapA (getOrAllocate parties) ["Alice", "Santa", "Reg"]
+  [alice, santa, holidayRegulator, public] <- mapA (getOrAllocate parties) ["Alice", "Santa", "Reg", "Public"]
   req <- submit santa do
     createCmd SecretSantaRegulationRequest with ..
 
