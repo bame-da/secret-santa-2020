@@ -49,7 +49,7 @@ const UserSignUp: React.FC<Props> = () => {
         </Header.Content>
       </Header>
       <Divider />
-      mySignupHelper
+      {mySignupHelper
       ? <Label>Signup pending</Label>
       : <>
         {/* FORM_BEGIN */}
@@ -70,7 +70,7 @@ const UserSignUp: React.FC<Props> = () => {
           Sign Up
         </Button>
         {/* FORM_END */}
-      </>
+      </>}
     </Segment>
   );
 };
