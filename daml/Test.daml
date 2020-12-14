@@ -7,10 +7,26 @@ import DA.Foldable (forA_)
 
 import Main
 
+getOrAllocate : [PartyDetails] -> Text -> Script Party
+getOrAllocate ps name = do
+  case find (\p -> p.displayName == Some name) ps of
+    Some pd -> return pd.party
+    None -> allocatePartyWithHint name (PartyIdHint name)
+
+init = script do
+  parties <- listKnownParties
+  [alice@public, santa, holidayRegulator] <- mapA (getOrAllocate parties) ["Alice", "Santa", "Reg"]
+  req <- submit santa do
+    createCmd SecretSantaRegulationRequest with ..
+
+  submit holidayRegulator do
+    exerciseCmd req Approve_Santa with ..
+
+
 test_secret_santa = script do
   -- Set up shop
   santa <- allocateParty "Santa"
-  holidayRegulator <- allocateParty "Regulator"
+  holidayRegulator <- allocateParty "Reg"
   let sskey = [santa ,holidayRegulator]
   setTime (datetime 2020 Dec 11 0 0 0)
   public <- allocateParty "Public"
