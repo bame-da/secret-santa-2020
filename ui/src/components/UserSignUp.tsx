@@ -15,32 +15,44 @@ const UserSignUp: React.FC<Props> = () => {
   const ledger = useLedger();
   const party = useParty();
   const secretSanta = useStreamQueriesAsPublic(Main.SecretSantaSignup).contracts[0]?.payload;
-  const myElf = useStreamQueries(Main.Elf, () => [{party}]).contracts[0]?.payload;
-  const mySignupHelper = useStreamQueries(Main.SecretSantaSignupHelper, () => [{party}]).contracts[0]?.payload;
+  const myElf = useStreamQueries(Main.Elf, () => [{party}]).contracts[0];
+  const mySignupHelper = useStreamQueries(Main.SecretSantaSignupHelper, () => [{party}]).contracts[0];
 
   const signup = useCallback(async () => {
-    try {
-      await ledger.create(Main.SecretSantaSignupHelper, 
-        {
-          santa: secretSanta.santa,
-          holidayRegulator: secretSanta.holidayRegulator,
-          party: party,
-          name: username
-        });
-    } catch(error) {
-      alert(`Unknown error:\n${error}`);
-    }
+    await ledger.create(Main.SecretSantaSignupHelper, 
+      {
+        santa: secretSanta.santa,
+        holidayRegulator: secretSanta.holidayRegulator,
+        party: party,
+        name: username
+      });
   }, [ledger, secretSanta, party, username]);
 
-  const handleSignup = async (event: React.FormEvent) => {
-    event.preventDefault();
-    await signup();
+  const retract = useCallback(async () => {
+    await ledger.archive(Main.SecretSantaSignupHelper, mySignupHelper.contractId);
+  }, [ledger, mySignupHelper]);
+
+  const changeName = useCallback(async () => {
+    await ledger.exercise(Main.Elf.Elf_ChangeName, myElf.contractId,
+      {
+        newName: username
+      });
+  }, [ledger, username, myElf]);
+
+  const handle = (fn : () => Promise<void> ) => { 
+    return async (event: React.FormEvent) => {
+      event.preventDefault();
+      try{
+        await fn();
+      }catch(error) {
+        alert(`Unknown error:\n${error}`);
+        console.error(error);
+      }
+    } 
   }
 
   return (
-    myElf
-    ? null
-    : <Segment>
+    <Segment>
       <Header as='h2'>
         <Icon name='gift' />
         <Header.Content>
@@ -48,12 +60,22 @@ const UserSignUp: React.FC<Props> = () => {
           <Header.Subheader>Give the gift of giving</Header.Subheader>
         </Header.Content>
       </Header>
+      <Label attached="top right"
+        color={myElf ? 'green' : mySignupHelper ? 'blue' : 'grey'}>
+        {myElf ? 'Signed up' : mySignupHelper ? 'Pending' : 'Not signed up'}
+      </Label>
       <Divider />
-      {mySignupHelper
-      ? <Label>Signup pending</Label>
-      : <>
-        {/* FORM_BEGIN */}
-        <Form.Input
+      <span>
+        { myElf
+        ? `You are signed up as ${myElf?.payload.name}.`
+        : mySignupHelper
+        ? `You requested sign-up as ${mySignupHelper?.payload.name}.`
+        : `Enter your real name to sign up.`}
+      </span>
+      <>
+        { mySignupHelper
+        ? ''
+        : <Form.Input
           fluid
           icon='tree'
           iconPosition='left'
@@ -61,16 +83,17 @@ const UserSignUp: React.FC<Props> = () => {
           value={username}
           className='test-select-username-field'
           onChange={e => setUsername(e.currentTarget.value)}
-        />
+          />
+        }
         <Button
           primary
           fluid
           className='test-select-login-button'
-          onClick={handleSignup}>
-          Sign Up
+          disabled={mySignupHelper ? false : username === ""}
+          onClick={handle(myElf ? changeName : mySignupHelper ? retract : signup)}>
+          {myElf ? 'Change Name' : mySignupHelper ? 'Retract' : 'Sign Up'}
         </Button>
-        {/* FORM_END */}
-      </>}
+      </>
     </Segment>
   );
 };
