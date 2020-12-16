@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useMemo } from 'react'
-import { List } from 'semantic-ui-react'
+import { List, Segment, Header, Icon, Divider } from 'semantic-ui-react'
 import { Main } from 'codegen-santa';
 import { useStreamQueriesAsPublic } from './PublicLedger';
 
@@ -24,16 +24,26 @@ const UserList: React.FC<Props> = () => {
       .sort((x, y) => x.name.localeCompare(y.name)),
       [allElves]);
   return (
-    <List divided relaxed>
-      {[...elves].sort((x, y) => x.name.localeCompare(y.name)).map(elf =>
-        <List.Item key={elf.name}>
-          <List.Icon name='tree' />
-          <List.Content>
-            <List.Header>{elf.name}</List.Header>
-          </List.Content>
-        </List.Item>
-      )}
-    </List>
+    <Segment>
+      <Header as='h2'>
+        <Icon name='snowflake' />
+        <Header.Content>
+          Elves
+          <Header.Subheader>Elves currently signed up</Header.Subheader>
+        </Header.Content>
+      </Header>
+      <Divider />
+      <List divided relaxed>
+        {[...elves].sort((x, y) => x.name.localeCompare(y.name)).map(elf =>
+          <List.Item key={elf.name}>
+            <List.Icon name='tree' />
+            <List.Content>
+              <List.Header>{elf.name}</List.Header>
+            </List.Content>
+          </List.Item>
+        )}
+      </List>
+    </Segment>
   );
 };
 

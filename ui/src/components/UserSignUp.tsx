@@ -5,28 +5,27 @@ import React, { useCallback } from 'react'
 import { Label, Form, Button, Segment, Header, Icon, Divider } from 'semantic-ui-react'
 import { Main } from 'codegen-santa';
 import { useParty, useStreamQueries, useLedger } from '@daml/react';
-import { useStreamQueriesAsPublic } from './PublicLedger';
 
 type Props = {
+  secretSantaSignup: Main.SecretSantaSignup.CreateEvent
 }
 
-const UserSignUp: React.FC<Props> = () => {
+const UserSignUp: React.FC<Props> = ({secretSantaSignup}) => {
   const [username, setUsername] = React.useState('');
   const ledger = useLedger();
   const party = useParty();
-  const secretSanta = useStreamQueriesAsPublic(Main.SecretSantaSignup).contracts[0]?.payload;
   const myElf = useStreamQueries(Main.Elf, () => [{party}]).contracts[0];
   const mySignupHelper = useStreamQueries(Main.SecretSantaSignupHelper, () => [{party}]).contracts[0];
 
   const signup = useCallback(async () => {
     await ledger.create(Main.SecretSantaSignupHelper, 
       {
-        santa: secretSanta.santa,
-        holidayRegulator: secretSanta.holidayRegulator,
+        santa: secretSantaSignup.payload.santa,
+        holidayRegulator: secretSantaSignup.payload.holidayRegulator,
         party: party,
         name: username
       });
-  }, [ledger, secretSanta, party, username]);
+  }, [ledger, party, username]);
 
   const retract = useCallback(async () => {
     await ledger.archive(Main.SecretSantaSignupHelper, mySignupHelper.contractId);
@@ -56,7 +55,7 @@ const UserSignUp: React.FC<Props> = () => {
       <Header as='h2'>
         <Icon name='gift' />
         <Header.Content>
-          Sign up
+          {`Sign up - only ${new Date(2020, 11, 18).getDate() - new Date().getDate()} days left!`}
           <Header.Subheader>Give the gift of giving</Header.Subheader>
         </Header.Content>
       </Header>

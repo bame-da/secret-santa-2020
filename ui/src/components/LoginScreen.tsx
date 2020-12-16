@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useCallback } from 'react'
-import { Button, Divider, Icon, Form, Grid, Header, Image, Segment } from 'semantic-ui-react'
+import { Button, Form, Grid, Header, Image, Segment, Icon } from 'semantic-ui-react'
 import Credentials, { computeCredentials } from '../Credentials';
 import UserList from './UserList';
 import { DeploymentMode, deploymentMode, ledgerId} from '../config';
@@ -10,12 +10,13 @@ import { useEffect } from 'react';
 
 type Props = {
   onLogin: (credentials: Credentials) => void;
+  isSignup?: boolean
 }
 
 /**
  * React component for the login screen of the `App`.
  */
-const LoginScreen: React.FC<Props> = ({onLogin}) => {
+const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
   const [username, setUsername] = React.useState('');
 
   const login = useCallback(async (credentials: Credentials) => {
@@ -59,7 +60,7 @@ const LoginScreen: React.FC<Props> = ({onLogin}) => {
             Secret
             <Image
               src='/undraw_santa_claus_q0g4.svg'
-              alt='Christmas Tree'
+              alt='Santa'
               spaced
               size='small'
               verticalAlign='middle'
@@ -96,17 +97,17 @@ const LoginScreen: React.FC<Props> = ({onLogin}) => {
             }
           </Segment>
         </Form>
-        <Segment>
-              <Header as='h2'>
-                <Icon name='snowflake' />
-                <Header.Content>
-                  Elves
-                  <Header.Subheader>People already participating</Header.Subheader>
-                </Header.Content>
-              </Header>
-              <Divider />
-              <UserList/>
-            </Segment>
+        { isSignup 
+        ? <Segment>
+            <Header as='h1'>
+              <Icon name='clock' />
+              <Header.Content>
+                Only {(new Date(2020, 11, 18).getDate() - new Date().getDate())} days left to sign up!
+              </Header.Content>
+            </Header>
+          </Segment>
+        : ''}
+        <UserList/>
       </Grid.Column>
     </Grid>
   );
