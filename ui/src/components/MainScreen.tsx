@@ -25,7 +25,7 @@ const MainScreen: React.FC<Props> = ({onLogout, secretSantaSignup}) => {
           <Image
             src='/undraw_christmas_tree_56sw.svg'
             alt='Christmas Tree'
-            size='mini'
+            size='tiny'
           />
         </Menu.Item>
         <Menu.Menu position='right' className='test-select-main-menu'>

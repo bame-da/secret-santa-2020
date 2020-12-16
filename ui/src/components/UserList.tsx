@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useMemo } from 'react'
-import { List, Segment, Header, Icon, Divider, Label } from 'semantic-ui-react'
+import { List, Segment, Header, Image, Divider, Label } from 'semantic-ui-react'
 import { Main } from 'codegen-santa';
 import { useStreamQueriesAsPublic } from './PublicLedger';
 import { Party } from '@daml/types';
@@ -21,7 +21,11 @@ const UserList: React.FC<Props> = ({party}) => {
   return (
     <Segment>
       <Header as='h2'>
-        <Icon name='snowflake' />
+        <Image
+          src='/undraw_snowman_1_a2ch.svg'
+          alt='Christmas Tree'
+          size='big'
+        />
         <Header.Content>
           Elves
           <Header.Subheader>Elves currently signed up</Header.Subheader>

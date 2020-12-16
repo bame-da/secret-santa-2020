@@ -72,7 +72,6 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
           <Segment>
             {deploymentMode !== DeploymentMode.PROD_DABL
             ? <>
-                {/* FORM_BEGIN */}
                 <Form.Input
                   fluid
                   icon='user'
@@ -89,7 +88,6 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
                   onClick={handleLogin}>
                   Log in
                 </Button>
-                {/* FORM_END */}
               </>
             : <Button primary fluid onClick={handleDablLogin}>
                 Log in with DABL
@@ -100,7 +98,11 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
         { isSignup 
         ? <Segment>
             <Header as='h1'>
-              <Icon name='clock outline' />
+            <Image
+              src='/undraw_time_management_30iu.svg'
+              alt='Gifts'
+              size='massive'
+            />
               <Header.Content>
                 Only {(new Date(2020, 11, 18).getDate() - new Date().getDate())} days left to sign up!
               </Header.Content>

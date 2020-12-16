@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useCallback } from 'react'
-import { Label, Form, Button, Segment, Header, Icon, Divider } from 'semantic-ui-react'
+import { Label, Form, Button, Segment, Header, Image, Divider } from 'semantic-ui-react'
 import { Main } from 'codegen-santa';
 import { useStreamQueries, useLedger } from '@daml/react';
 import { Party } from '@daml/types';
@@ -54,7 +54,11 @@ const UserSignUp: React.FC<Props> = ({secretSantaSignup, party}) => {
   return (
     <Segment>
       <Header as='h2'>
-        <Icon name='gift' />
+        <Image
+          src='/undraw_gifts_btw0.svg'
+          alt='Gifts'
+          size='massive'
+        />
         <Header.Content>
           {`Sign up - only ${new Date(2020, 11, 18).getDate() - new Date().getDate()} days left!`}
           <Header.Subheader>Give the gift of giving</Header.Subheader>

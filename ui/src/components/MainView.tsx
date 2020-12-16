@@ -3,9 +3,8 @@
 
 import React, { useMemo } from 'react';
 import { useParty, useStreamQueries } from '@daml/react';
-import UserList from './UserList';
 import { Main } from 'codegen-santa';
-import { Segment, Header, Icon } from 'semantic-ui-react';
+import { Segment, Header, Image } from 'semantic-ui-react';
 import GivePledgeForm from './GivePledgeForm';
 import ReceivePledgeForm from './ReceivePledgeForm';
 import MeetingsList from './MeetingsList';
@@ -33,7 +32,11 @@ const MainView: React.FC = () => {
 
   const waiting = <Segment>
     <Header as='h2'>
-      <Icon name='hourglass half' />
+      <Image
+        src='/undraw_santa_claus_q0g4.svg'
+        alt='Santa'
+        size='massive'
+      />
       <Header.Content>
         Waiting for Santa...
         <Header.Subheader>Signups are over, but you haven't been matched yet.</Header.Subheader>
@@ -52,8 +55,6 @@ const MainView: React.FC = () => {
         <ReceivePledgeForm pledge={receivedPledge}/>
         <MeetingsList/>
       </>}
-      
-      <UserList party={party}/>
     </>
   );
 }
