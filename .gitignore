@@ -1,4 +1,4 @@
-/.daml
+.daml
 node_modules
 ui/lib
 *.dar

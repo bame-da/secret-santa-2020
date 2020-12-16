@@ -1,0 +1,11 @@
+sdk-version: 1.8.0
+name: santa
+source: daml
+version: 0.0.1
+dependencies:
+  - daml-prim
+  - daml-stdlib
+  - daml-script
+sandbox-options:
+  - --wall-clock-time
+  - --ledgerid=santa-sandbox

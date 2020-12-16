@@ -1,0 +1,89 @@
+module Scripts where
+
+import Daml.Script
+
+import DA.Foldable (forA_)
+
+import Main
+
+getOrAllocate : [PartyDetails] -> Text -> Script Party
+getOrAllocate ps name = do
+  case find (\p -> p.displayName == Some name) ps of
+    Some pd -> return pd.party
+    None -> allocatePartyWithHint name (PartyIdHint name)
+
+core_parties = script do
+  knownParties <- listKnownParties
+  mapA (getOrAllocate knownParties) ["Santa", "Reg", "Public"]
+
+init_sandbox = script do
+  parties@[santa, holidayRegulator, public] <- core_parties
+  req <- submit santa do
+    createCmd SecretSantaRegulationRequest with ..
+
+  submit holidayRegulator do
+    exerciseCmd req Approve_Santa with ..
+
+  return parties
+
+sign_up : [Text] -> Script [Party]
+sign_up party_texts = script do
+  knownParties <- listKnownParties
+  ps <- mapA (getOrAllocate knownParties) party_texts
+  [santa, holidayRegulator, _] <- core_parties
+  forA_ ps (\p -> do
+    helper <- submit p do
+      createCmd SecretSantaSignupHelper with
+        party = p
+        name = show p
+        .. 
+    submit santa do
+      exerciseCmd helper ActionSignup
+    )
+  return ps
+
+close_signup : Party -> Script ()
+close_signup santa = script do
+  [(sscid, _)] <- query @SecretSantaSignup santa
+  elfContracts <- query @Elf santa
+  let elves =  map (\(_, elf) -> elf.party) elfContracts
+  submit santa do
+    exerciseCmd sscid CloseSignup with ..
+  return ()
+
+match_elves : Party -> Script ()
+match_elves santa = script do
+  [(sscid, ss)] <- query @SecretSanta santa
+  let
+    h::t = ss.elves
+    permutation = t ++ [h]
+  submit santa do
+    exerciseCmd sscid Match_Elves with ..
+  return ()
+
+make_pledge : Party -> Text -> Script ()
+make_pledge p gift = script do
+  [(matchCid, _)] <- queryFilter @ElfMatch p (\match -> match.giverElf == p)
+  submit p do
+    exerciseCmd matchCid Make_Pledge with gift
+  return ()
+
+claim_meeting : Party -> Party -> Script ()
+claim_meeting elf metElf = script do
+  [(sscid, _)] <- query @SecretSanta elf
+  submit elf do
+    exerciseCmd sscid Claim_Meeting with ..
+  return ()
+
+resolve_pledge : Party -> Script ()
+resolve_pledge p = script do
+  [(matchCid, _)] <- queryFilter @Pledge p (\match -> match.recipientElf == p)
+  submit p do
+    exerciseCmd matchCid Resolve
+  return ()
+
+tidy_up : Party -> Script ()
+tidy_up santa = script do
+  [(sscid, _)] <- query @SecretSanta santa
+  submit santa do
+    exerciseCmd sscid TidyUp
