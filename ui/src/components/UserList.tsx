@@ -2,27 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useMemo } from 'react'
-import { List, Segment, Header, Icon, Divider } from 'semantic-ui-react'
+import { List, Segment, Header, Icon, Divider, Label } from 'semantic-ui-react'
 import { Main } from 'codegen-santa';
 import { useStreamQueriesAsPublic } from './PublicLedger';
+import { Party } from '@daml/types';
 
 type Props = {
+  party?: Party
 }
 
-/**
- * React component to display a list of `User`s.
- * Every party in the list can be added as a friend.
- */
-const UserList: React.FC<Props> = () => {
+const UserList: React.FC<Props> = ({party}) => {
   const allElves = useStreamQueriesAsPublic(Main.Elf).contracts;
-  // USERS_END
-  
-    // Sorted list of users that are following the current user
-    const elves = useMemo(() =>
-      allElves
-      .map(elf => elf.payload)
-      .sort((x, y) => x.name.localeCompare(y.name)),
-      [allElves]);
+  const elves = useMemo(() =>
+    allElves
+    .map(elf => elf.payload)
+    .sort((x, y) => x.name.localeCompare(y.name)),
+    [allElves]);
   return (
     <Segment>
       <Header as='h2'>
@@ -36,9 +31,14 @@ const UserList: React.FC<Props> = () => {
       <List divided relaxed>
         {[...elves].sort((x, y) => x.name.localeCompare(y.name)).map(elf =>
           <List.Item key={elf.name}>
-            <List.Icon name='tree' />
-            <List.Content>
-              <List.Header>{elf.name}</List.Header>
+            <List.Icon name='tree' verticalAlign='middle'/>
+            <List.Content verticalAlign='middle' >
+              <List.Header>
+                <span style={{verticalAlign: 'middle'}}>{elf.name}</span>
+                { function () {console.log(party, elf.party); return party === elf.party}()
+                ? <Label pointing='left' size='mini' color='teal' style={{verticalAlign: 'middle'}}>This is you!</Label>
+                : null }
+              </List.Header>
             </List.Content>
           </List.Item>
         )}

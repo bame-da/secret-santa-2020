@@ -25,7 +25,7 @@ const UserSignUp: React.FC<Props> = ({secretSantaSignup}) => {
         party: party,
         name: username
       });
-  }, [ledger, party, username]);
+  }, [ledger, party, username, secretSantaSignup]);
 
   const retract = useCallback(async () => {
     await ledger.archive(Main.SecretSantaSignupHelper, mySignupHelper.contractId);
