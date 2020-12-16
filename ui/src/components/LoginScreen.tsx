@@ -100,7 +100,7 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
         { isSignup 
         ? <Segment>
             <Header as='h1'>
-              <Icon name='clock' />
+              <Icon name='clock outline' />
               <Header.Content>
                 Only {(new Date(2020, 11, 18).getDate() - new Date().getDate())} days left to sign up!
               </Header.Content>

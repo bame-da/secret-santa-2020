@@ -35,7 +35,7 @@ const WithPublicLedger: React.FC = () => {
           onLogout={() => setCredentials(undefined)}
           secretSantaSignup={secretSantaSignup}/>
       </DamlLedger>
-    : <LoginScreen onLogin={setCredentials} isSignup={secretSantaSignup ? true : false} />
+    : <LoginScreen onLogin={setCredentials} isSignup={secretSantaSignup.contracts.length ? true : false} />
   );
 }
 

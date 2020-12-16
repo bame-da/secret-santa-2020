@@ -15,7 +15,7 @@ const SignupView: React.FC<Props> = ({secretSantaSignup}) => {
   const party = useParty();
   return (
     <>
-      <UserSignUp secretSantaSignup={secretSantaSignup}/>
+      <UserSignUp secretSantaSignup={secretSantaSignup} party={party}/>
       <UserList party={party}/>
     </>
   );
