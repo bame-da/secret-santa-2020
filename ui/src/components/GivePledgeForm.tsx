@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Segment, Header, Image, Divider, Label, List, Button, Form, Icon } from 'semantic-ui-react';
+import { Segment, Header, Image, Divider, List, Button, Form } from 'semantic-ui-react';
 import { Main } from 'codegen-santa';
 import { useLedger } from '@daml/react';
 
@@ -16,9 +16,9 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
   const daysLeft = Math.max((penaltyDate - new Date().getDate()), 0);
 
   const makePledge = useCallback(async () => {
-     if(elfMatch)
+    if(elfMatch)
       await ledger.exercise(Main.ElfMatch.Make_Pledge, elfMatch.contractId, { gift })
-     else
+    else
        throw new Error("Can't make pledge without an ElfMatch contract.")
   }, [elfMatch, ledger, gift]);
 
@@ -45,7 +45,7 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
           size='massive'
         />
         <Header.Content>
-          Your Gift to {recipientElf}
+          {`Your Gift to ${recipientElf}` + (pledge ? `: ${pledge?.gift}` : '')}
           <Header.Subheader>{pledge ? "That's a great choice!" : "Try to come up with a personalized Gift"}</Header.Subheader>
         </Header.Content>
       </Header>
@@ -54,37 +54,36 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
         {pledge ?
 
           <List.Item>
-            <List.Icon name='gift' size='big' />
+            <List.Icon 
+              name={pledge.revealed ? 'eye' : 'eye slash'}
+              color={pledge.revealed ? 'green' : 'red'}
+              size='big' />
             <List.Content verticalAlign='middle' >
               <List.Header style={{ verticalAlign: 'middle' }} as='h3'>
-                <span>Your pledged gift to {recipientElf} is: {pledge.gift}</span>
+              { pledge.revealed === false
+              ? `${recipientElf} doesn't know about the present yet`
+              : `${recipientElf} must have been happy to learn about the present`}
               </List.Header>
-              {pledge.revealed === false ?
-                <span><Icon name="eye slash" color="red" /> {recipientElf} doesn't know about the present yet</span>
-                :
-                <span><Icon name="eye" color="green" /> {recipientElf} must have been happy to learn about the present</span>
-              }
             </List.Content>
           </List.Item>
           :
           <>
             <List.Item>
-              <List.Icon name='gift' size='big' />
+              <List.Icon name='clock outline' size='big' />
               <List.Content verticalAlign='middle' >
                 <List.Header style={{ verticalAlign: 'middle' }} as='h3'>
-                  <span>Hurry up and pledge a gift to {recipientElf}!</span>
-                  <Label style={{ verticalAlign: 'middle' }} pointing='left' color='red'>Only {daysLeft} days left!</Label>
+                  <span>Only {daysLeft} days until Santa chooses for you!</span>
                 </List.Header>
               </List.Content>
             </List.Item>
             <List.Item>
               <List.Content floated='right'>
                 <Button
-                  enabled={pledge === undefined}
+                  disabled={gift === ""}
                   label="Pledge"
                   labelPosition='left'
                   icon="envelope"
-                  color="grey"
+                  color="blue"
                   onClick={handleMakePledge}
                 >
                 </Button>

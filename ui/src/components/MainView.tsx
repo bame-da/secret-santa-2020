@@ -61,10 +61,12 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
           elfMatch={elfMatch?.contracts[0]}
           pledge={givePledge}/>
         <ReceivePledgeForm pledge={receivePledge}/>
-        <MeetingsList 
-          secretSanta={secretSanta}
-          beneficiary={recipientElf}
-          benefactor={receivePledge?.giverElf}/>
+        { givePledge
+        ?  <MeetingsList 
+            secretSanta={secretSanta}
+            beneficiary={recipientElf}
+            benefactor={receivePledge?.giverElf}/>
+        : null }
       </>}
     </>
   );
