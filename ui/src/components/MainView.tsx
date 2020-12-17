@@ -9,18 +9,22 @@ import GivePledgeForm from './GivePledgeForm';
 import ReceivePledgeForm from './ReceivePledgeForm';
 import MeetingsList from './MeetingsList';
 
-const MainView: React.FC = () => {
+type Props = {
+  secretSanta : Main.SecretSanta.CreateEvent
+}
+
+const MainView: React.FC<Props> = ({secretSanta}) => {
   const party = useParty();
   const elfMatch = useStreamQueries(Main.ElfMatch);
   const allPledges = useStreamQueries(Main.Pledge);
 
-  const myPledge = useMemo(() =>
+  const givePledge = useMemo(() =>
     allPledges.contracts
     .map(pledge => pledge.payload)
     .filter(pledge => pledge.giverElf === party)[0]
   , [allPledges]);
 
-  const receivedPledge = useMemo(() =>
+  const receivePledge = useMemo(() =>
     allPledges.contracts
     .map(pledge => pledge.payload)
     .filter(pledge => pledge.recipientElf === party)[0]
@@ -51,9 +55,12 @@ const MainView: React.FC = () => {
       { elfMatch.contracts.length == 0
       ? waiting
       : <> 
-        <GivePledgeForm elfMatch={elfMatch.contracts[0].payload} pledge={myPledge}/>
-        <ReceivePledgeForm pledge={receivedPledge}/>
-        <MeetingsList/>
+        <GivePledgeForm elfMatch={elfMatch.contracts[0].payload} pledge={givePledge}/>
+        <ReceivePledgeForm pledge={receivePledge}/>
+        <MeetingsList 
+          secretSanta={secretSanta}
+          beneficiary={elfMatch.contracts[0].payload.recipientElf}
+          benefactor={receivePledge?.giverElf}/>
       </>}
     </>
   );

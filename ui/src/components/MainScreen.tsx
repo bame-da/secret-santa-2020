@@ -50,7 +50,7 @@ const MainScreen: React.FC<Props> = ({onLogout, secretSantaSignup}) => {
         : secretSanta.loading
         ? <></>
         : secretSanta.contracts[0]
-        ? <MainView/>
+        ? <MainView secretSanta={secretSanta.contracts[0]}/>
         : <Segment raised>
             <Header as='h1'>
               <Image
