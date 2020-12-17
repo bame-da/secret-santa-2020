@@ -12,7 +12,7 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
   const [gift, setGift] = useState(pledge?.gift || "");
   const ledger = useLedger();
 
-  const penaltyDate = new Date(2020, 11, 18).getDate();
+  const penaltyDate = new Date(2020, 12, 25).getDate();
   const daysLeft = Math.max((penaltyDate - new Date().getDate()), 0);
 
   const makePledge = useCallback(async () => {
