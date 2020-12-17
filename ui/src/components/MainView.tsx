@@ -48,18 +48,22 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
     </Header>
   </Segment>
 
+  const recipientElf = (elfMatch || allPledges)?.contracts[0]?.payload.recipientElf;
+
   return (
     loading
     ? null
     : <>
-      { elfMatch.contracts.length == 0
+      { elfMatch.contracts.length === 0 && givePledge === undefined
       ? waiting
       : <> 
-        <GivePledgeForm elfMatch={elfMatch.contracts[0].payload} pledge={givePledge}/>
+        <GivePledgeForm 
+          elfMatch={elfMatch?.contracts[0]}
+          pledge={givePledge}/>
         <ReceivePledgeForm pledge={receivePledge}/>
         <MeetingsList 
           secretSanta={secretSanta}
-          beneficiary={elfMatch.contracts[0].payload.recipientElf}
+          beneficiary={recipientElf}
           benefactor={receivePledge?.giverElf}/>
       </>}
     </>
