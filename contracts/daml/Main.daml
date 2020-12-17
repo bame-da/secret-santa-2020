@@ -43,15 +43,15 @@ template Elf
 
       TidyUp_Elf : ()
         do
-          oMatch <- lookupByKey @ElfMatch (key this)
-          oPledge <- lookupByKey @Pledge (key this)
+          (pledgeCid, pledge) <- fetchByKey @Pledge (key this)
+          assertMsg "Can't tidy up while there are open pledges" pledge.resolved
+          archive pledgeCid
           (_, ss) <- fetchByKey @SecretSanta [santa, holidayRegulator]
           forA_ ss.elves (\metElf -> do
             oMeeting <- lookupByKey @ElfMeeting ElfMeeting with
               elf = party
               ..
             forA_ oMeeting archive)
-          assertMsg "Can't tidy up while there are open matches or pledges" (isNone oMatch && isNone oPledge)
 
 -- | Represents that one elf is on the hook to give a gift to another elf
 template ElfMatch
@@ -77,7 +77,7 @@ template ElfMatch
           now <- getTime
           assertMsg "Can't panalise if pledge has been made" (isNone pledge)
           assertMsg "Can't penalise before December 25th)" (now > time (date 2020 Dec 25) 0 0 0)
-          create Pledge with gift = "A bag of homebaked cookies"; revealed = False; .. 
+          create Pledge with gift = "A bag of homebaked cookies"; revealed = False; resolved = False;.. 
 
     controller giverElf can        
       Make_Pledge
@@ -85,7 +85,7 @@ template ElfMatch
         with
           gift : Text
         do
-          create Pledge with revealed = False; ..
+          create Pledge with revealed = False; resolved = False; ..
 
 -- | Represents a claim that one elf met another
 template ElfMeeting
@@ -121,6 +121,8 @@ template Pledge
     -- | A boolean indicating whether the pledge is revealed to the receiver.
     -- Should be set True once the meeing has happened.
     revealed : Bool
+    -- | A boolean indicating whether the pledge is resolved
+    resolved : Bool
   where
     signatory santa, holidayRegulator, giverElf
     observer if revealed then [recipientElf] else []
@@ -133,6 +135,7 @@ template Pledge
         revealer : Party
       controller revealer
       do
+        assertMsg "Cannot reveal twice" (not revealed)
         if revealer == santa
           then do
             now <- getTime
@@ -141,10 +144,11 @@ template Pledge
             assertMsg "Only santa and giver can reveal the pledge" (revealer == giverElf)
         create this with revealed = True
 
-    choice Resolve : ()
+    choice Resolve : ContractId Pledge
       controller recipientElf
       do
-        return ()
+        assertMsg "Cannot resolve twice" (not resolved)
+        create this with resolved = True
 
 -- | A request from Santa to a regulator to get regualted
 template SecretSantaRegulationRequest

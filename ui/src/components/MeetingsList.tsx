@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
-import { Segment, Header, Image, Divider, List, Label, Button, Icon } from 'semantic-ui-react';
+import { Segment, Header, Image, Divider, List, Label, Button } from 'semantic-ui-react';
 import { Main } from 'codegen-santa';
-import  { useStreamQueriesAsPublic } from './PublicLedger';
+import { useStreamQueriesAsPublic } from './PublicLedger';
 import { useParty, useLedger } from '@daml/react';
 import { Party } from '@daml/types';
 
