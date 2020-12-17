@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { Segment, Header, Image, Divider, List, Label, Button } from 'semantic-ui-react';
 import { Main } from 'codegen-santa';
 import { useStreamQueriesAsPublic } from './PublicLedger';
-import { useParty, useLedger } from '@daml/react';
+import { useParty, useLedger, useStreamQueries } from '@daml/react';
 import { Party } from '@daml/types';
 
 type Props = {
@@ -18,7 +18,7 @@ const MeetingsList: React.FC<Props> = ({secretSanta, beneficiary, benefactor}) =
   const ledger = useLedger();
   const party = useParty();
   const allElves = useStreamQueriesAsPublic(Main.Elf).contracts;
-  const allMeetings = useStreamQueriesAsPublic(Main.ElfMeeting).contracts;
+  const allMeetings = useStreamQueries(Main.ElfMeeting).contracts;
 
   const meet = useCallback(async (elf : Main.Elf) => {
     await ledger.exercise(Main.SecretSanta.Claim_Meeting, secretSanta.contractId,
@@ -60,22 +60,22 @@ const MeetingsList: React.FC<Props> = ({secretSanta, beneficiary, benefactor}) =
     allMeetings
       .map(meeting => meeting.payload)
       .forEach(meeting => {
-        if(meeting.elf = party) ret[meeting.metElf] = ret[meeting.metElf] + 1
+        if(meeting.elf === party) ret[meeting.metElf] = ret[meeting.metElf] + 1
         else ret[meeting.elf] = ret[meeting.elf] + 2
       })
-      return ret;
+    return ret;
   }, [allMeetings, elves, party])
 
   function hasMet (elf : Main.Elf) : boolean {
-    return meetingStatus[elf.party] % 2 == 1
+    return meetingStatus[elf.party] % 2 === 1
   }
 
   function getMetLabelColor (elf : Main.Elf) {
     switch (meetingStatus[elf.party]) {
       case 0:
-        return 'grey';
-      case 1:
         return 'blue';
+      case 1:
+        return 'green';
       case 2:
         return 'orange';
       case 3:

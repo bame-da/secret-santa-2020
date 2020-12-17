@@ -4,7 +4,7 @@ import { Main } from 'codegen-santa';
 import { useLedger } from '@daml/react';
 
 type Props = {
-  elfMatch: Main.ElfMatch.CreateEvent
+  elfMatch?: Main.ElfMatch.CreateEvent
   pledge?: Main.Pledge
 }
 
@@ -16,7 +16,10 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
   const daysLeft = Math.max((penaltyDate - new Date().getDate()), 0);
 
   const makePledge = useCallback(async () => {
-     await ledger.exercise(Main.ElfMatch.Make_Pledge, elfMatch.contractId, { gift });
+     if(elfMatch)
+      await ledger.exercise(Main.ElfMatch.Make_Pledge, elfMatch.contractId, { gift })
+     else
+       throw new Error("Can't make pledge without an ElfMatch contract.")
   }, [elfMatch, ledger, gift]);
 
   const handleMakePledge = async (event: React.FormEvent) => {
@@ -31,7 +34,7 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
     }
   }
 
-  const recipientElf = (elfMatch?.payload || pledge).recipientElf;
+  const recipientElf = (elfMatch?.payload || pledge)?.recipientElf;
 
   return (
     <Segment>

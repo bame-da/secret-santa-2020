@@ -22,13 +22,13 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
     allPledges.contracts
     .map(pledge => pledge.payload)
     .filter(pledge => pledge.giverElf === party)[0]
-  , [allPledges]);
+  , [allPledges, party]);
 
   const receivePledge = useMemo(() =>
     allPledges.contracts
     .map(pledge => pledge.payload)
     .filter(pledge => pledge.recipientElf === party)[0]
-  , [allPledges]);
+  , [allPledges, party]);
 
   const loading = useMemo(() => 
     elfMatch.loading || allPledges.loading
