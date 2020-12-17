@@ -22,13 +22,13 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
     allPledges.contracts
     .map(pledge => pledge.payload)
     .filter(pledge => pledge.giverElf === party)[0]
-  , [allPledges]);
+  , [allPledges, party]);
 
   const receivePledge = useMemo(() =>
     allPledges.contracts
     .map(pledge => pledge.payload)
     .filter(pledge => pledge.recipientElf === party)[0]
-  , [allPledges]);
+  , [allPledges, party]);
 
   const loading = useMemo(() => 
     elfMatch.loading || allPledges.loading
@@ -48,19 +48,25 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
     </Header>
   </Segment>
 
+  const recipientElf = elfMatch?.contracts[0]?.payload?.recipientElf || givePledge?.recipientElf;
+
   return (
     loading
     ? null
     : <>
-      { elfMatch.contracts.length == 0
+      { elfMatch.contracts.length === 0 && givePledge === undefined
       ? waiting
       : <> 
-        <GivePledgeForm elfMatch={elfMatch.contracts[0].payload} pledge={givePledge}/>
+        <GivePledgeForm 
+          elfMatch={elfMatch?.contracts[0]}
+          pledge={givePledge}/>
         <ReceivePledgeForm pledge={receivePledge}/>
-        <MeetingsList 
-          secretSanta={secretSanta}
-          beneficiary={elfMatch.contracts[0].payload.recipientElf}
-          benefactor={receivePledge?.giverElf}/>
+        { givePledge
+        ?  <MeetingsList 
+            secretSanta={secretSanta}
+            beneficiary={recipientElf}
+            benefactor={receivePledge?.giverElf}/>
+        : null }
       </>}
     </>
   );

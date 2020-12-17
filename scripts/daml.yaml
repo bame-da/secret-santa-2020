@@ -7,7 +7,7 @@ dependencies:
   - daml-stdlib
   - daml-script
 data-dependencies:
-  - ../contracts/santa-0.0.1.dar
+  - ../contracts/santa-0.0.2.dar
 sandbox-options:
   - --wall-clock-time
   - --ledgerid=santa-sandbox

@@ -1,27 +1,109 @@
-import React from 'react';
-import { Segment, Header, Image } from 'semantic-ui-react';
+import React, { useCallback, useState } from 'react';
+import { Segment, Header, Image, Divider, List, Button, Form } from 'semantic-ui-react';
 import { Main } from 'codegen-santa';
+import { useLedger } from '@daml/react';
 
 type Props = {
-    elfMatch: Main.ElfMatch
-    pledge?: Main.Pledge
+  elfMatch?: Main.ElfMatch.CreateEvent
+  pledge?: Main.Pledge
 }
 
-const GivePledgeForm: React.FC<Props> = ({elfMatch, pledge}) => {
+const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
+  const [gift, setGift] = useState(pledge?.gift || "");
+  const ledger = useLedger();
+
+  const penaltyDate = new Date(2020, 12, 25).getDate();
+  const daysLeft = Math.max((penaltyDate - new Date().getDate()), 0);
+
+  const makePledge = useCallback(async () => {
+    if(elfMatch)
+      await ledger.exercise(Main.ElfMatch.Make_Pledge, elfMatch.contractId, { gift })
+    else
+       throw new Error("Can't make pledge without an ElfMatch contract.")
+  }, [elfMatch, ledger, gift]);
+
+  const handleMakePledge = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      if (!pledge) {
+        makePledge();
+      }
+    } catch (error) {
+      alert(`Unknown error:\n${error}`);
+      console.error(error);
+    }
+  }
+
+  const recipientElf = (elfMatch?.payload || pledge)?.recipientElf;
+
   return (
     <Segment>
-        <Header as='h2'>
+      <Header as='h2'>
         <Image
           src='/undraw_gifts_btw0.svg'
           alt='Gifts'
           size='massive'
         />
         <Header.Content>
-            Your Gift to TODO
-            <Header.Subheader>TODO</Header.Subheader>
+          {`Your Gift to ${recipientElf}` + (pledge ? `: ${pledge?.gift}` : '')}
+          <Header.Subheader>{pledge ? "That's a great choice!" : "Try to come up with a personalized Gift"}</Header.Subheader>
         </Header.Content>
-        </Header>
-  </Segment>
+      </Header>
+      <Divider />
+      <List divided relaxed verticalAlign='middle'>
+        {pledge ?
+
+          <List.Item>
+            <List.Icon 
+              name={pledge.revealed ? 'eye' : 'eye slash'}
+              color={pledge.revealed ? 'green' : 'red'}
+              size='big' />
+            <List.Content verticalAlign='middle' >
+              <List.Header style={{ verticalAlign: 'middle' }} as='h3'>
+              { pledge.revealed === false
+              ? `${recipientElf} doesn't know about the present yet`
+              : `${recipientElf} must have been happy to learn about the present`}
+              </List.Header>
+            </List.Content>
+          </List.Item>
+          :
+          <>
+            <List.Item>
+              <List.Icon name='clock outline' size='big' />
+              <List.Content verticalAlign='middle' >
+                <List.Header style={{ verticalAlign: 'middle' }} as='h3'>
+                  <span>Only {daysLeft} days until Santa chooses for you!</span>
+                </List.Header>
+              </List.Content>
+            </List.Item>
+            <List.Item>
+              <List.Content floated='right'>
+                <Button
+                  disabled={gift === ""}
+                  label="Pledge"
+                  labelPosition='left'
+                  icon="envelope"
+                  color="blue"
+                  onClick={handleMakePledge}
+                >
+                </Button>
+              </List.Content>
+              <List.Content verticalAlign='middle' >
+                <Form.Input
+                  fluid
+                  icon='gift'
+                  iconPosition='left'
+                  placeholder='Pledge'
+                  value={gift}
+                  onChange={e => setGift(e.currentTarget.value)}
+                />
+
+              </List.Content>
+            </List.Item>
+          </>
+        }
+      </List>
+    </Segment>
   );
 }
 
