@@ -48,7 +48,7 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
     </Header>
   </Segment>
 
-  const recipientElf = (elfMatch || allPledges)?.contracts[0]?.payload.recipientElf;
+  const recipientElf = elfMatch?.contracts[0]?.payload?.recipientElf || givePledge.recipientElf;
 
   return (
     loading
