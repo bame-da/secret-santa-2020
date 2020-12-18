@@ -5,6 +5,7 @@ import Daml.Script
 import DA.Foldable (forA_)
 
 import Main
+import PledgeResolver
 
 getOrAllocate : [PartyDetails] -> Text -> Script Party
 getOrAllocate ps name = do
@@ -77,9 +78,9 @@ claim_meeting elf metElf = script do
 
 resolve_pledge : Party -> Script ()
 resolve_pledge p = script do
-  [(matchCid, _)] <- queryFilter @Pledge p (\match -> match.recipientElf == p)
+  [(matchCid, pledge)] <- queryFilter @Pledge p (\match -> match.recipientElf == p)
   submit p do
-    exerciseCmd matchCid Resolve
+    createAndExerciseCmd (GiftReceipt with ..) Resolve_Pledge_With_Receipt
   return ()
 
 tidy_up : Party -> Script ()
@@ -87,3 +88,6 @@ tidy_up santa = script do
   [(sscid, _)] <- query @SecretSanta santa
   submit santa do
     exerciseCmd sscid TidyUp
+  receipts <- query @GiftReceipt santa
+  forA_ receipts (\(cid, _) -> submit santa do
+    exerciseCmd cid Tidy_Up_Receipt)

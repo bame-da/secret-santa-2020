@@ -1,0 +1,21 @@
+module PledgeResolver where
+
+import Main
+
+template GiftReceipt
+  with
+    pledge : Pledge
+  where
+    signatory pledge.recipientElf
+    observer signatory pledge
+
+    nonconsuming choice Resolve_Pledge_With_Receipt : ()
+      controller pledge.recipientElf
+      do
+        (cid, actualPledge) <- fetchByKey @Pledge (key pledge)
+        assertMsg "Pledges don't match" (pledge == actualPledge)
+        exercise cid Resolve
+
+    choice Tidy_Up_Receipt : ()
+      controller pledge.santa
+      do return ()

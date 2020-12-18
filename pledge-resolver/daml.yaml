@@ -1,5 +1,5 @@
 sdk-version: 1.8.0
-name: santa-scripts
+name: santa-pledge-resolver
 source: daml
 version: 0.0.1
 dependencies:
@@ -7,7 +7,6 @@ dependencies:
   - daml-stdlib
   - daml-script
 data-dependencies:
-  - ../pledge-resolver/santa-pledge-resolver-0.0.1.dar
   - ../contracts/santa-0.0.1.dar
 sandbox-options:
   - --wall-clock-time
