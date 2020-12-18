@@ -55,14 +55,16 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
 
           <List.Item>
             <List.Icon 
-              name={pledge.revealed ? 'eye' : 'eye slash'}
-              color={pledge.revealed ? 'green' : 'red'}
+              name={pledge.resolved ? 'gift' : pledge.revealed ? 'eye' : 'eye slash'}
+              color={pledge.resolved ? 'green' : pledge.revealed ? 'yellow' : 'red'}
               size='big' />
             <List.Content verticalAlign='middle' >
               <List.Header style={{ verticalAlign: 'middle' }} as='h3'>
-              { pledge.revealed === false
-              ? `${recipientElf} doesn't know about the present yet`
-              : `${recipientElf} must have been happy to learn about the present`}
+              { pledge.resolved
+              ? `${recipientElf} has confirmed receipt. They must have been happy!`
+              : pledge.revealed
+              ? `${recipientElf} knows what they are getting, but hasn't confirmed receipt`
+              : `${recipientElf} doesn't know about the present yet` }
               </List.Header>
             </List.Content>
           </List.Item>

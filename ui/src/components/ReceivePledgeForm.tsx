@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Segment, Header, Image, Divider, Form } from 'semantic-ui-react';
+import { Segment, Header, Image, Divider, Form, Icon } from 'semantic-ui-react';
 import { Main } from 'codegen-santa';
 import { useLedger } from '@daml/react';
 
@@ -44,7 +44,17 @@ const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
         </Header.Content>
       </Header>
       { pledge
+      ? pledge.payload.resolved
       ? <>
+          <Header style={{ verticalAlign: 'middle' }} as='h3'>
+            <Icon 
+              name='gift'
+              color='green'
+              size='big' />
+            <Header.Content>You have confirmed receipt. Enjoy your gift!</Header.Content>
+          </Header>
+        </>
+      : <>
           <Divider/>
           <Form>
             <Form.Button
