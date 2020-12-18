@@ -1,10 +1,11 @@
 import React, { useCallback } from 'react';
 import { Segment, Header, Image, Divider, Form, Icon } from 'semantic-ui-react';
 import { Main } from 'codegen-santa';
+import { PledgeResolver } from 'codegen-pledge-resolver';
 import { useLedger } from '@daml/react';
 
 type Props = {
-    pledge?: Main.Pledge.CreateEvent
+    pledge?: [Main.Pledge, boolean]
 }
 
 const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
@@ -13,7 +14,7 @@ const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
   const resolve = useCallback(async () => {
     try {
       if(pledge) {
-        ledger.exerciseByKey(Main.Pledge.Resolve, pledge.key, { resolver: pledge.payload.recipientElf });
+        ledger.createAndExercise(PledgeResolver.GiftReceipt.Resolve_Pledge_With_Receipt, { pledge : pledge[0] }, {});
       } else
         throw new Error("Can't resolve without a pledge.")
     } catch(error) {
@@ -35,16 +36,16 @@ const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
           size='massive'
         />
         <Header.Content>
-            {`Your Secret Santa` + (pledge ? `: ${pledge?.payload.giverElf}` : '')}
+            {`Your Secret Santa` + (pledge ? `: ${pledge?.[0].giverElf}` : '')}
             <Header.Subheader>
               { pledge
-              ? `Their gift to you: ${pledge.payload.gift}`
+              ? `Their gift to you: ${pledge[0].gift}`
               : 'Who could it be?! Keep meeting people to find out.'}
             </Header.Subheader>
         </Header.Content>
       </Header>
       { pledge
-      ? pledge.payload.resolved
+      ? pledge[1]
       ? <>
           <Header style={{ verticalAlign: 'middle' }} as='h3'>
             <Icon 

@@ -5,11 +5,11 @@ import { useLedger } from '@daml/react';
 
 type Props = {
   elfMatch?: Main.ElfMatch.CreateEvent
-  pledge?: Main.Pledge
+  pledge?: [Main.Pledge, boolean]
 }
 
 const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
-  const [gift, setGift] = useState(pledge?.gift || "");
+  const [gift, setGift] = useState(pledge?.[0].gift || "");
   const ledger = useLedger();
 
   const penaltyDate = new Date(2020, 12, 25).getDate();
@@ -34,7 +34,7 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
     }
   }
 
-  const recipientElf = (elfMatch?.payload || pledge)?.recipientElf;
+  const recipientElf = (elfMatch?.payload || pledge?.[0].recipientElf);
 
   return (
     <Segment>
@@ -45,7 +45,7 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
           size='massive'
         />
         <Header.Content>
-          {`Your Gift to ${recipientElf}` + (pledge ? `: ${pledge?.gift}` : '')}
+          {`Your Gift to ${recipientElf}` + (pledge ? `: ${pledge?.[0].gift}` : '')}
           <Header.Subheader>{pledge ? "That's a great choice!" : "Try to come up with a personalized Gift"}</Header.Subheader>
         </Header.Content>
       </Header>
@@ -54,14 +54,14 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
         {pledge ?
           <List.Item>
             <List.Icon 
-              name={pledge.resolved ? 'gift' : pledge.revealed ? 'eye' : 'eye slash'}
-              color={pledge.resolved ? 'green' : pledge.revealed ? 'yellow' : 'red'}
+              name={pledge[1] ? 'gift' : pledge[0].revealed ? 'eye' : 'eye slash'}
+              color={pledge[1] ? 'green' : pledge[0].revealed ? 'yellow' : 'red'}
               size='big' />
             <List.Content verticalAlign='middle' >
               <List.Header style={{ verticalAlign: 'middle' }} as='h3'>
-              { pledge.resolved
+              { pledge[1]
               ? `${recipientElf} has confirmed receipt. They must have been happy!`
-              : pledge.revealed
+              : pledge[0].revealed
               ? `${recipientElf} knows what they are getting, but hasn't confirmed receipt`
               : `${recipientElf} doesn't know about the present yet` }
               </List.Header>

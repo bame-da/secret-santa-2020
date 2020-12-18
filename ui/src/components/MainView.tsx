@@ -4,6 +4,7 @@
 import React, { useMemo } from 'react';
 import { useParty, useStreamQueries } from '@daml/react';
 import { Main } from 'codegen-santa';
+import { PledgeResolver } from 'codegen-pledge-resolver';
 import { Segment, Header, Image } from 'semantic-ui-react';
 import GivePledgeForm from './GivePledgeForm';
 import ReceivePledgeForm from './ReceivePledgeForm';
@@ -17,18 +18,23 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
   const party = useParty();
   const elfMatch = useStreamQueries(Main.ElfMatch);
   const allPledges = useStreamQueries(Main.Pledge);
+  const allReceipts = useStreamQueries(PledgeResolver.GiftReceipt);
 
   const givePledge = useMemo(() =>
     allPledges.contracts
-    .map(pledge => pledge.payload)
-    .filter(pledge => pledge.giverElf === party)[0]
-  , [allPledges, party]);
+    .map((pledge) : [Main.Pledge, boolean] => [pledge.payload, false])
+    .concat(allReceipts.contracts
+      .map(receipt => [receipt.payload.pledge, true])
+    ).filter(pledge => pledge[0].giverElf === party)[0]
+  , [allPledges, allReceipts, party]);
 
   const receivePledge = useMemo(() =>
     allPledges.contracts
-    .map(pledge => pledge)
-    .filter(pledge => pledge.payload.recipientElf === party)[0]
-  , [allPledges, party]);
+    .map((pledge) : [Main.Pledge, boolean] => [pledge.payload, false])
+    .concat(allReceipts.contracts
+      .map(receipt => [receipt.payload.pledge, true])
+    ).filter(pledge => pledge[0].recipientElf === party)[0]
+  , [allPledges, allReceipts, party]);
 
   const loading = useMemo(() => 
     elfMatch.loading || allPledges.loading
@@ -48,7 +54,7 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
     </Header>
   </Segment>
 
-  const recipientElf = elfMatch?.contracts[0]?.payload?.recipientElf || givePledge?.recipientElf;
+  const recipientElf = elfMatch?.contracts[0]?.payload?.recipientElf || givePledge?.[0].recipientElf;
 
   return (
     loading
@@ -65,7 +71,7 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
         ?  <MeetingsList 
             secretSanta={secretSanta}
             beneficiary={recipientElf}
-            benefactor={receivePledge?.payload.giverElf}/>
+            benefactor={receivePledge[0]?.giverElf}/>
         : null }
       </>}
     </>
