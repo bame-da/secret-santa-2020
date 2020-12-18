@@ -17,7 +17,7 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
 
   const makePledge = useCallback(async () => {
     if(elfMatch)
-      await ledger.exercise(Main.ElfMatch.Make_Pledge, elfMatch.contractId, { gift })
+      await ledger.exerciseByKey(Main.ElfMatch.Make_Pledge, elfMatch.key, { gift })
     else
        throw new Error("Can't make pledge without an ElfMatch contract.")
   }, [elfMatch, ledger, gift]);

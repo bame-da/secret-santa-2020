@@ -26,8 +26,8 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
 
   const receivePledge = useMemo(() =>
     allPledges.contracts
-    .map(pledge => pledge.payload)
-    .filter(pledge => pledge.recipientElf === party)[0]
+    .map(pledge => pledge)
+    .filter(pledge => pledge.payload.recipientElf === party)[0]
   , [allPledges, party]);
 
   const loading = useMemo(() => 
@@ -65,7 +65,7 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
         ?  <MeetingsList 
             secretSanta={secretSanta}
             beneficiary={recipientElf}
-            benefactor={receivePledge?.giverElf}/>
+            benefactor={receivePledge?.payload.giverElf}/>
         : null }
       </>}
     </>

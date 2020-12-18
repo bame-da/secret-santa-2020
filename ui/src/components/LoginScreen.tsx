@@ -68,7 +68,7 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
             2020
           </Header.Content>
         </Header>
-        <Form size='large' className='test-select-login-screen'>
+        <Form size='large'>
           <Segment>
             {deploymentMode !== DeploymentMode.PROD_DABL
             ? <>
@@ -78,13 +78,11 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
                   iconPosition='left'
                   placeholder='Username'
                   value={username}
-                  className='test-select-username-field'
                   onChange={e => setUsername(e.currentTarget.value)}
                 />
                 <Button
                   primary
                   fluid
-                  className='test-select-login-button'
                   onClick={handleLogin}>
                   Log in
                 </Button>
