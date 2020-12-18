@@ -53,8 +53,8 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
   }, [login]);
 
   return (
-    <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
-      <Grid.Column textAlign='left' style={{ maxWidth: 450 }}>
+    <Grid textAlign='center' columns={1} style={{ height: '100vh' }} verticalAlign='middle'>
+      <Grid.Column textAlign='left' width={8}>
         <Header as='h1' textAlign='center' size='huge' style={{color: '#223668'}}>
           <Header.Content>
             Secret
@@ -98,11 +98,11 @@ const LoginScreen: React.FC<Props> = ({onLogin, isSignup}) => {
         { isSignup 
         ? <Segment>
             <Header as='h1'>
-            <Image
-              src='/undraw_time_management_30iu.svg'
-              alt='Gifts'
-              size='massive'
-            />
+              <Image
+                src='/undraw_time_management_30iu.svg'
+                alt='Gifts'
+                size='massive'
+              />
               <Header.Content>
                 Only {(new Date(2020, 11, 18).getDate() - new Date().getDate())} days left to sign up!
               </Header.Content>

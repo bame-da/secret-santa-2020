@@ -5,3 +5,4 @@ ui/lib
 *.log
 *.zip
 build
+package-lock.json

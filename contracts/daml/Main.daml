@@ -75,7 +75,7 @@ template ElfMatch
         do
           pledge <- lookupByKey @Pledge (key this)
           now <- getTime
-          assertMsg "Can't panalise if pledge has been made" (isNone pledge)
+          assertMsg "Can't penalise if pledge has been made" (isNone pledge)
           assertMsg "Can't penalise before December 25th)" (now > time (date 2020 Dec 25) 0 0 0)
           create Pledge with gift = "A bag of homebaked cookies"; revealed = False; resolved = False;.. 
 
