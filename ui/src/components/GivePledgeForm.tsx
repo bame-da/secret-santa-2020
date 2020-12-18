@@ -6,10 +6,12 @@ import { useLedger } from '@daml/react';
 type Props = {
   elfMatch?: Main.ElfMatch.CreateEvent
   pledge?: Main.Pledge
+  elvesMap: { [key: string] : string }
 }
 
-const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
+const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge, elvesMap }) => {
   const [gift, setGift] = useState(pledge?.gift || "");
+
   const ledger = useLedger();
 
   const penaltyDate = new Date(2020, 12, 25).getDate();
@@ -34,7 +36,8 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
     }
   }
 
-  const recipientElf = (elfMatch?.payload || pledge)?.recipientElf;
+  const recipientElfParty = (elfMatch?.payload || pledge)?.recipientElf;
+  const recipientElf = recipientElfParty ? elvesMap[recipientElfParty] : null;
 
   return (
     <Segment>

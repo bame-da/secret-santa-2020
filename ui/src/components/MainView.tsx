@@ -8,15 +8,24 @@ import { Segment, Header, Image } from 'semantic-ui-react';
 import GivePledgeForm from './GivePledgeForm';
 import ReceivePledgeForm from './ReceivePledgeForm';
 import MeetingsList from './MeetingsList';
+import { useStreamQueriesAsPublic } from './PublicLedger';
 
 type Props = {
   secretSanta : Main.SecretSanta.CreateEvent
 }
 
+type IHash = { [key : string] : string }
+
 const MainView: React.FC<Props> = ({secretSanta}) => {
   const party = useParty();
   const elfMatch = useStreamQueries(Main.ElfMatch);
   const allPledges = useStreamQueries(Main.Pledge);
+  const allElves = useStreamQueriesAsPublic(Main.Elf).contracts;
+  const elvesMap = useMemo(() => {
+    let ret : IHash = {};
+    allElves.forEach(elf => {ret[elf.payload.party] = elf.payload.name;})
+    return ret;
+    },[allElves]);
 
   const givePledge = useMemo(() =>
     allPledges.contracts
@@ -59,13 +68,17 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
       : <> 
         <GivePledgeForm 
           elfMatch={elfMatch?.contracts[0]}
-          pledge={givePledge}/>
-        <ReceivePledgeForm pledge={receivePledge}/>
+          pledge={givePledge}
+          elvesMap={elvesMap}/>
+        <ReceivePledgeForm 
+          pledge={receivePledge}
+          elvesMap={elvesMap}/>
         { givePledge
         ?  <MeetingsList 
             secretSanta={secretSanta}
             beneficiary={recipientElf}
-            benefactor={receivePledge?.payload.giverElf}/>
+            benefactor={receivePledge?.payload.giverElf}
+            allElves={allElves}/>
         : null }
       </>}
     </>

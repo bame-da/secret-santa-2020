@@ -4,10 +4,11 @@ import { Main } from 'codegen-santa';
 import { useLedger } from '@daml/react';
 
 type Props = {
-    pledge?: Main.Pledge.CreateEvent
+    pledge?: Main.Pledge.CreateEvent,
+    elvesMap: { [key: string] : string }
 }
 
-const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
+const ReceivePledgeForm: React.FC<Props> = ({pledge, elvesMap}) => {
   const ledger = useLedger();
 
   const resolve = useCallback(async () => {
@@ -26,6 +27,9 @@ const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
     await resolve();
   }
 
+  const giverElfParty = pledge?.payload.giverElf;
+  const giverElf = giverElfParty ? elvesMap[giverElfParty] : null;
+
   return (
     <Segment>
         <Header as='h2'>
@@ -35,7 +39,7 @@ const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
           size='massive'
         />
         <Header.Content>
-            {`Your Secret Santa` + (pledge ? `: ${pledge?.payload.giverElf}` : '')}
+            {`Your Secret Santa` + (pledge ? `: ${giverElf}` : '')}
             <Header.Subheader>
               { pledge
               ? `Their gift to you: ${pledge.payload.gift}`

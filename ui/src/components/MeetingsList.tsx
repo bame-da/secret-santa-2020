@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { Segment, Header, Image, Divider, List, Label, Button } from 'semantic-ui-react';
 import { Main } from 'codegen-santa';
-import { useStreamQueriesAsPublic } from './PublicLedger';
 import { useParty, useLedger, useStreamQueries } from '@daml/react';
 import { Party } from '@daml/types';
 
@@ -9,15 +8,15 @@ type Props = {
   secretSanta : Main.SecretSanta.CreateEvent,
   beneficiary : Party,
   benefactor? : Party
+  allElves: readonly Main.Elf.CreateEvent[]
 }
 
 interface IHash { [key : string] : number; };
 
-const MeetingsList: React.FC<Props> = ({secretSanta, beneficiary, benefactor}) => {
+const MeetingsList: React.FC<Props> = ({secretSanta, beneficiary, benefactor, allElves}) => {
   console.log(benefactor, beneficiary)
   const ledger = useLedger();
   const party = useParty();
-  const allElves = useStreamQueriesAsPublic(Main.Elf).contracts;
   const allMeetings = useStreamQueries(Main.ElfMeeting).contracts;
 
   const meet = useCallback(async (elf : Main.Elf) => {
