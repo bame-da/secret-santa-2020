@@ -71,7 +71,7 @@ const MainView: React.FC<Props> = ({secretSanta}) => {
         ?  <MeetingsList 
             secretSanta={secretSanta}
             beneficiary={recipientElf}
-            benefactor={receivePledge[0]?.giverElf}/>
+            benefactor={receivePledge?.[0].giverElf}/>
         : null }
       </>}
     </>

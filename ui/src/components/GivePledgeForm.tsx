@@ -34,7 +34,7 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
     }
   }
 
-  const recipientElf = (elfMatch?.payload || pledge?.[0].recipientElf);
+  const recipientElf = (elfMatch?.payload || pledge?.[0])?.recipientElf;
 
   return (
     <Segment>
