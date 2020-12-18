@@ -5,10 +5,11 @@ import { PledgeResolver } from 'codegen-pledge-resolver';
 import { useLedger } from '@daml/react';
 
 type Props = {
-    pledge?: [Main.Pledge, boolean]
+    pledge?: [Main.Pledge, boolean],
+    elvesMap: { [key: string] : string }
 }
 
-const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
+const ReceivePledgeForm: React.FC<Props> = ({pledge, elvesMap}) => {
   const ledger = useLedger();
 
   const resolve = useCallback(async () => {
@@ -27,6 +28,9 @@ const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
     await resolve();
   }
 
+  const giverElfParty = pledge?.[0].giverElf;
+  const giverElf = giverElfParty ? elvesMap[giverElfParty] : null;
+
   return (
     <Segment>
         <Header as='h2'>
@@ -36,7 +40,7 @@ const ReceivePledgeForm: React.FC<Props> = ({pledge}) => {
           size='massive'
         />
         <Header.Content>
-            {`Your Secret Santa` + (pledge ? `: ${pledge?.[0].giverElf}` : '')}
+            {`Your Secret Santa` + (pledge ? `: ${giverElf}` : '')}
             <Header.Subheader>
               { pledge
               ? `Their gift to you: ${pledge[0].gift}`
