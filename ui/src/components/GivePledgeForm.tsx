@@ -52,7 +52,6 @@ const GivePledgeForm: React.FC<Props> = ({ elfMatch, pledge }) => {
       <Divider />
       <List divided relaxed verticalAlign='middle'>
         {pledge ?
-
           <List.Item>
             <List.Icon 
               name={pledge.resolved ? 'gift' : pledge.revealed ? 'eye' : 'eye slash'}
